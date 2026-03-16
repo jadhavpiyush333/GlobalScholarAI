@@ -5,9 +5,8 @@
  * Study Abroad AI Counselor API
  * OpenAPI spec version: 0.1.0
  */
+import type { AuthUser } from "./authUser";
 
-export type ListUniversitiesParams = {
-  country?: string;
-  search?: string;
-  field?: string;
-};
+export interface AuthUserEnvelope {
+  user: AuthUser | null;
+}

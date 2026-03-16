@@ -6,8 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListUniversitiesParams = {
-  country?: string;
-  search?: string;
-  field?: string;
+export type HandleBrowserLoginCallbackParams = {
+  code?: string;
+  state?: string;
+  iss?: string;
 };

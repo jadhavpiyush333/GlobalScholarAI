@@ -6,8 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListUniversitiesParams = {
-  country?: string;
-  search?: string;
-  field?: string;
-};
+export interface JobOpportunity {
+  title: string;
+  avgSalaryUSD: string;
+  demandLevel: string;
+  topHiringCountries: string;
+}

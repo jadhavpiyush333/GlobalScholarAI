@@ -6,8 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListUniversitiesParams = {
-  country?: string;
-  search?: string;
-  field?: string;
-};
+export const LogoutSuccessValue = {
+  success: true,
+} as const;
+export type LogoutSuccess = typeof LogoutSuccessValue;

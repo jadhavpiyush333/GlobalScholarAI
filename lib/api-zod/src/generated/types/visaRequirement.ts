@@ -15,4 +15,5 @@ export interface VisaRequirement {
   fees?: string;
   proofOfFunds?: string;
   notes?: string;
+  visaCounselorTips?: string;
 }

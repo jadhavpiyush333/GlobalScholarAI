@@ -9,6 +9,48 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface AuthUser {
+  id: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  lastName: string | null;
+  /** @nullable */
+  profileImageUrl: string | null;
+}
+
+export interface AuthUserEnvelope {
+  user: AuthUser | null;
+}
+
+export interface MobileTokenExchangeRequest {
+  /** @minLength 1 */
+  code: string;
+  /** @minLength 1 */
+  code_verifier: string;
+  /** @minLength 1 */
+  redirect_uri: string;
+  /** @minLength 1 */
+  state: string;
+  /** @minLength 1 */
+  nonce?: string;
+}
+
+export interface MobileTokenExchangeSuccess {
+  token: string;
+}
+
+export const LogoutSuccessValue = {
+  success: true,
+} as const;
+export type LogoutSuccess = typeof LogoutSuccessValue;
+
+export interface ErrorEnvelope {
+  error: string;
+}
+
 export interface OpenaiConversation {
   id: number;
   title: string;
@@ -42,6 +84,18 @@ export interface OpenaiError {
   error: string;
 }
 
+export interface UniversityContact {
+  admissionsEmail?: string;
+  admissionsPhone?: string;
+  internationalOfficeEmail?: string;
+  internationalOfficePhone?: string;
+  address?: string;
+  visaCounselorEmail?: string;
+  visaCounselorPhone?: string;
+  financialAidEmail?: string;
+  financialAidPhone?: string;
+}
+
 export interface University {
   id: number;
   name: string;
@@ -50,6 +104,8 @@ export interface University {
   website?: string;
   description?: string;
   ranking?: number;
+  fields?: string;
+  scholarshipsAvailable?: boolean;
 }
 
 export interface Program {
@@ -65,9 +121,10 @@ export interface Program {
   requirements?: string;
   ieltsMin?: number;
   toeflMin?: number;
+  fieldSlug?: string;
 }
 
-export interface UniversityWithPrograms {
+export interface UniversityWithDetails {
   id: number;
   name: string;
   country: string;
@@ -75,7 +132,11 @@ export interface UniversityWithPrograms {
   website?: string;
   description?: string;
   ranking?: number;
+  fields?: string;
+  scholarshipsAvailable?: boolean;
+  contact?: UniversityContact;
   programs: Program[];
+  financialServices?: string;
 }
 
 export interface VisaRequirement {
@@ -87,16 +148,57 @@ export interface VisaRequirement {
   fees?: string;
   proofOfFunds?: string;
   notes?: string;
+  visaCounselorTips?: string;
 }
+
+export interface JobOpportunity {
+  title: string;
+  avgSalaryUSD: string;
+  demandLevel: string;
+  topHiringCountries: string;
+}
+
+export interface FieldInsight {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  futureScope?: string;
+  globalCompetition?: string;
+  competitionLevel?: string;
+  avgStartingSalaryUSD?: string;
+  topCountriesForJobs?: string;
+  growthRate?: string;
+  jobOpportunities?: JobOpportunity[];
+  topSkillsRequired?: string;
+  industryTrends?: string;
+}
+
+/**
+ * Opaque session token — `Bearer <sid>`.
+ */
+export type AuthorizationSessionHeaderParameter = string;
+
+export type BeginBrowserLoginParams = {
+  returnTo?: string;
+};
+
+export type HandleBrowserLoginCallbackParams = {
+  code?: string;
+  state?: string;
+  iss?: string;
+};
 
 export type ListUniversitiesParams = {
   country?: string;
   search?: string;
+  field?: string;
 };
 
 export type ListProgramsParams = {
   universityId?: number;
   degree?: string;
+  field?: string;
 };
 
 export type ListVisaRequirementsParams = {

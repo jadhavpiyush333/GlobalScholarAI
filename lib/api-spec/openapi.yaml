@@ -9,17 +9,21 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: Auth
+    description: Browser and mobile authentication endpoints.
   - name: openai
     description: OpenAI AI chat operations
   - name: knowledge
     description: Knowledge base for universities, programs, and visa requirements
+  - name: fields
+    description: Field insights including future scope, job opportunities, and competition
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -27,6 +31,122 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/user:
+    get:
+      tags: [Auth]
+      operationId: getCurrentAuthUser
+      summary: Get the currently authenticated user
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Auth status resolved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserEnvelope'
+  /login:
+    get:
+      tags: [Auth]
+      operationId: beginBrowserLogin
+      summary: Start the browser OIDC login flow
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the OIDC authorization endpoint.
+  /callback:
+    get:
+      tags: [Auth]
+      operationId: handleBrowserLoginCallback
+      summary: Complete the browser OIDC login flow
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: iss
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uri
+      responses:
+        '302':
+          description: Redirect on success or failure.
+  /logout:
+    get:
+      tags: [Auth]
+      operationId: logoutBrowserSession
+      summary: Clear the session and begin OIDC logout
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '302':
+          description: Redirect to the OIDC provider logout URL.
+  /mobile-auth/token-exchange:
+    post:
+      tags: [Auth]
+      operationId: exchangeMobileAuthorizationCode
+      summary: Exchange a mobile OIDC code for a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileTokenExchangeRequest'
+      responses:
+        '200':
+          description: Session created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileTokenExchangeSuccess'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Token did not contain usable claims.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Token exchange failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /mobile-auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logoutMobileSession
+      summary: Delete a mobile session token
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+      responses:
+        '200':
+          description: Logout processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutSuccess'
 
   /openai/conversations:
     get:
@@ -162,6 +282,11 @@ paths:
           required: false
           schema:
             type: string
+        - name: field
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: List of universities
@@ -176,7 +301,7 @@ paths:
     get:
       operationId: getUniversity
       tags: [knowledge]
-      summary: Get a university with its programs
+      summary: Get a university with its programs, contacts, and financial info
       parameters:
         - name: id
           in: path
@@ -185,11 +310,11 @@ paths:
             type: integer
       responses:
         "200":
-          description: University with programs
+          description: University with full details
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UniversityWithPrograms"
+                $ref: "#/components/schemas/UniversityWithDetails"
         "404":
           description: Not found
           content:
@@ -209,6 +334,11 @@ paths:
           schema:
             type: integer
         - name: degree
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: field
           in: query
           required: false
           schema:
@@ -249,7 +379,63 @@ paths:
                 items:
                   $ref: "#/components/schemas/VisaRequirement"
 
+  /fields:
+    get:
+      operationId: listFields
+      tags: [fields]
+      summary: List all available study fields
+      responses:
+        "200":
+          description: List of fields
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FieldInsight"
+
+  /fields/{slug}:
+    get:
+      operationId: getField
+      tags: [fields]
+      summary: Get detailed field insight including future scope, jobs, competition
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Field insight details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldInsight"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+
 components:
+  parameters:
+    AuthorizationSessionHeader:
+      name: Authorization
+      in: header
+      required: false
+      description: Opaque session token — `Bearer <sid>`.
+      schema:
+        type: string
+    SessionCookie:
+      name: sid
+      in: cookie
+      required: false
+      description: Browser session cookie.
+      schema:
+        type: string
+
   schemas:
     HealthStatus:
       type: object
@@ -258,6 +444,69 @@ components:
           type: string
       required:
         - status
+
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl]
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, 'null']
+          format: email
+        firstName:
+          type: [string, 'null']
+        lastName:
+          type: [string, 'null']
+        profileImageUrl:
+          type: [string, 'null']
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: '#/components/schemas/AuthUser'
+            - type: 'null'
+    MobileTokenExchangeRequest:
+      type: object
+      required: [code, code_verifier, redirect_uri, state]
+      properties:
+        code:
+          type: string
+          minLength: 1
+        code_verifier:
+          type: string
+          minLength: 1
+        redirect_uri:
+          type: string
+          minLength: 1
+          format: uri
+        state:
+          type: string
+          minLength: 1
+        nonce:
+          type: string
+          minLength: 1
+    MobileTokenExchangeSuccess:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    LogoutSuccess:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          const: true
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
 
     OpenaiConversation:
       type: object
@@ -339,6 +588,28 @@ components:
       required:
         - error
 
+    UniversityContact:
+      type: object
+      properties:
+        admissionsEmail:
+          type: string
+        admissionsPhone:
+          type: string
+        internationalOfficeEmail:
+          type: string
+        internationalOfficePhone:
+          type: string
+        address:
+          type: string
+        visaCounselorEmail:
+          type: string
+        visaCounselorPhone:
+          type: string
+        financialAidEmail:
+          type: string
+        financialAidPhone:
+          type: string
+
     University:
       type: object
       properties:
@@ -356,6 +627,10 @@ components:
           type: string
         ranking:
           type: integer
+        fields:
+          type: string
+        scholarshipsAvailable:
+          type: boolean
       required:
         - id
         - name
@@ -389,6 +664,8 @@ components:
           type: number
         toeflMin:
           type: number
+        fieldSlug:
+          type: string
       required:
         - id
         - universityId
@@ -398,7 +675,7 @@ components:
         - duration
         - language
 
-    UniversityWithPrograms:
+    UniversityWithDetails:
       type: object
       properties:
         id:
@@ -415,10 +692,18 @@ components:
           type: string
         ranking:
           type: integer
+        fields:
+          type: string
+        scholarshipsAvailable:
+          type: boolean
+        contact:
+          $ref: "#/components/schemas/UniversityContact"
         programs:
           type: array
           items:
             $ref: "#/components/schemas/Program"
+        financialServices:
+          type: string
       required:
         - id
         - name
@@ -445,8 +730,64 @@ components:
           type: string
         notes:
           type: string
+        visaCounselorTips:
+          type: string
       required:
         - id
         - country
         - visaType
         - requirements
+
+    JobOpportunity:
+      type: object
+      properties:
+        title:
+          type: string
+        avgSalaryUSD:
+          type: string
+        demandLevel:
+          type: string
+        topHiringCountries:
+          type: string
+      required:
+        - title
+        - avgSalaryUSD
+        - demandLevel
+        - topHiringCountries
+
+    FieldInsight:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        futureScope:
+          type: string
+        globalCompetition:
+          type: string
+        competitionLevel:
+          type: string
+        avgStartingSalaryUSD:
+          type: string
+        topCountriesForJobs:
+          type: string
+        growthRate:
+          type: string
+        jobOpportunities:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobOpportunity"
+        topSkillsRequired:
+          type: string
+        industryTrends:
+          type: string
+      required:
+        - id
+        - slug
+        - name
+        - description

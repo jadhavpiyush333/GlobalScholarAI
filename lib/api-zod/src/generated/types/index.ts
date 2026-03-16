@@ -6,11 +6,22 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./authorizationSessionHeaderParameter";
+export * from "./authUser";
+export * from "./authUserEnvelope";
+export * from "./beginBrowserLoginParams";
 export * from "./createOpenaiConversationBody";
+export * from "./errorEnvelope";
+export * from "./fieldInsight";
+export * from "./handleBrowserLoginCallbackParams";
 export * from "./healthStatus";
+export * from "./jobOpportunity";
 export * from "./listProgramsParams";
 export * from "./listUniversitiesParams";
 export * from "./listVisaRequirementsParams";
+export * from "./logoutSuccess";
+export * from "./mobileTokenExchangeRequest";
+export * from "./mobileTokenExchangeSuccess";
 export * from "./openaiConversation";
 export * from "./openaiConversationWithMessages";
 export * from "./openaiError";
@@ -18,5 +29,6 @@ export * from "./openaiMessage";
 export * from "./program";
 export * from "./sendOpenaiMessageBody";
 export * from "./university";
-export * from "./universityWithPrograms";
+export * from "./universityContact";
+export * from "./universityWithDetails";
 export * from "./visaRequirement";

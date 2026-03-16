@@ -19,4 +19,5 @@ export interface Program {
   requirements?: string;
   ieltsMin?: number;
   toeflMin?: number;
+  fieldSlug?: string;
 }

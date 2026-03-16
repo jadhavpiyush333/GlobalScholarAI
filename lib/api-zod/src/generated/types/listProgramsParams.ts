@@ -9,4 +9,5 @@
 export type ListProgramsParams = {
   universityId?: number;
   degree?: string;
+  field?: string;
 };

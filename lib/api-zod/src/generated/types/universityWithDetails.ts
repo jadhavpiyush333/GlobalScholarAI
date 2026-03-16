@@ -6,8 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { Program } from "./program";
+import type { UniversityContact } from "./universityContact";
 
-export interface UniversityWithPrograms {
+export interface UniversityWithDetails {
   id: number;
   name: string;
   country: string;
@@ -15,5 +16,9 @@ export interface UniversityWithPrograms {
   website?: string;
   description?: string;
   ranking?: number;
+  fields?: string;
+  scholarshipsAvailable?: boolean;
+  contact?: UniversityContact;
   programs: Program[];
+  financialServices?: string;
 }

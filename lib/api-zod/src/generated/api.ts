@@ -8,11 +8,89 @@
 import * as zod from "zod";
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
+});
+
+/**
+ * @summary Get the currently authenticated user
+ */
+export const GetCurrentAuthUserHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const GetCurrentAuthUserResponse = zod.object({
+  user: zod.union([
+    zod.object({
+      id: zod.string(),
+      email: zod.string().email().nullable(),
+      firstName: zod.string().nullable(),
+      lastName: zod.string().nullable(),
+      profileImageUrl: zod.string().nullable(),
+    }),
+    zod.null(),
+  ]),
+});
+
+/**
+ * @summary Start the browser OIDC login flow
+ */
+export const BeginBrowserLoginQueryParams = zod.object({
+  returnTo: zod.coerce.string().optional(),
+});
+
+/**
+ * @summary Complete the browser OIDC login flow
+ */
+export const HandleBrowserLoginCallbackQueryParams = zod.object({
+  code: zod.coerce.string().optional(),
+  state: zod.coerce.string().optional(),
+  iss: zod.coerce.string().url().optional(),
+});
+
+/**
+ * @summary Clear the session and begin OIDC logout
+ */
+export const LogoutBrowserSessionHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary Exchange a mobile OIDC code for a session token
+ */
+
+export const ExchangeMobileAuthorizationCodeBody = zod.object({
+  code: zod.string().min(1),
+  code_verifier: zod.string().min(1),
+  redirect_uri: zod.string().url().min(1),
+  state: zod.string().min(1),
+  nonce: zod.string().min(1).optional(),
+});
+
+export const ExchangeMobileAuthorizationCodeResponse = zod.object({
+  token: zod.string(),
+});
+
+/**
+ * @summary Delete a mobile session token
+ */
+export const LogoutMobileSessionHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const LogoutMobileSessionResponse = zod.object({
+  success: zod.boolean(),
 });
 
 /**
@@ -98,6 +176,7 @@ export const SendOpenaiMessageBody = zod.object({
 export const ListUniversitiesQueryParams = zod.object({
   country: zod.coerce.string().optional(),
   search: zod.coerce.string().optional(),
+  field: zod.coerce.string().optional(),
 });
 
 export const ListUniversitiesResponseItem = zod.object({
@@ -108,11 +187,13 @@ export const ListUniversitiesResponseItem = zod.object({
   website: zod.string().optional(),
   description: zod.string().optional(),
   ranking: zod.number().optional(),
+  fields: zod.string().optional(),
+  scholarshipsAvailable: zod.boolean().optional(),
 });
 export const ListUniversitiesResponse = zod.array(ListUniversitiesResponseItem);
 
 /**
- * @summary Get a university with its programs
+ * @summary Get a university with its programs, contacts, and financial info
  */
 export const GetUniversityParams = zod.object({
   id: zod.coerce.number(),
@@ -126,6 +207,21 @@ export const GetUniversityResponse = zod.object({
   website: zod.string().optional(),
   description: zod.string().optional(),
   ranking: zod.number().optional(),
+  fields: zod.string().optional(),
+  scholarshipsAvailable: zod.boolean().optional(),
+  contact: zod
+    .object({
+      admissionsEmail: zod.string().optional(),
+      admissionsPhone: zod.string().optional(),
+      internationalOfficeEmail: zod.string().optional(),
+      internationalOfficePhone: zod.string().optional(),
+      address: zod.string().optional(),
+      visaCounselorEmail: zod.string().optional(),
+      visaCounselorPhone: zod.string().optional(),
+      financialAidEmail: zod.string().optional(),
+      financialAidPhone: zod.string().optional(),
+    })
+    .optional(),
   programs: zod.array(
     zod.object({
       id: zod.number(),
@@ -140,8 +236,10 @@ export const GetUniversityResponse = zod.object({
       requirements: zod.string().optional(),
       ieltsMin: zod.number().optional(),
       toeflMin: zod.number().optional(),
+      fieldSlug: zod.string().optional(),
     }),
   ),
+  financialServices: zod.string().optional(),
 });
 
 /**
@@ -150,6 +248,7 @@ export const GetUniversityResponse = zod.object({
 export const ListProgramsQueryParams = zod.object({
   universityId: zod.coerce.number().optional(),
   degree: zod.coerce.string().optional(),
+  field: zod.coerce.string().optional(),
 });
 
 export const ListProgramsResponseItem = zod.object({
@@ -165,6 +264,7 @@ export const ListProgramsResponseItem = zod.object({
   requirements: zod.string().optional(),
   ieltsMin: zod.number().optional(),
   toeflMin: zod.number().optional(),
+  fieldSlug: zod.string().optional(),
 });
 export const ListProgramsResponse = zod.array(ListProgramsResponseItem);
 
@@ -185,7 +285,69 @@ export const ListVisaRequirementsResponseItem = zod.object({
   fees: zod.string().optional(),
   proofOfFunds: zod.string().optional(),
   notes: zod.string().optional(),
+  visaCounselorTips: zod.string().optional(),
 });
 export const ListVisaRequirementsResponse = zod.array(
   ListVisaRequirementsResponseItem,
 );
+
+/**
+ * @summary List all available study fields
+ */
+export const ListFieldsResponseItem = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  description: zod.string(),
+  futureScope: zod.string().optional(),
+  globalCompetition: zod.string().optional(),
+  competitionLevel: zod.string().optional(),
+  avgStartingSalaryUSD: zod.string().optional(),
+  topCountriesForJobs: zod.string().optional(),
+  growthRate: zod.string().optional(),
+  jobOpportunities: zod
+    .array(
+      zod.object({
+        title: zod.string(),
+        avgSalaryUSD: zod.string(),
+        demandLevel: zod.string(),
+        topHiringCountries: zod.string(),
+      }),
+    )
+    .optional(),
+  topSkillsRequired: zod.string().optional(),
+  industryTrends: zod.string().optional(),
+});
+export const ListFieldsResponse = zod.array(ListFieldsResponseItem);
+
+/**
+ * @summary Get detailed field insight including future scope, jobs, competition
+ */
+export const GetFieldParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const GetFieldResponse = zod.object({
+  id: zod.number(),
+  slug: zod.string(),
+  name: zod.string(),
+  description: zod.string(),
+  futureScope: zod.string().optional(),
+  globalCompetition: zod.string().optional(),
+  competitionLevel: zod.string().optional(),
+  avgStartingSalaryUSD: zod.string().optional(),
+  topCountriesForJobs: zod.string().optional(),
+  growthRate: zod.string().optional(),
+  jobOpportunities: zod
+    .array(
+      zod.object({
+        title: zod.string(),
+        avgSalaryUSD: zod.string(),
+        demandLevel: zod.string(),
+        topHiringCountries: zod.string(),
+      }),
+    )
+    .optional(),
+  topSkillsRequired: zod.string().optional(),
+  industryTrends: zod.string().optional(),
+});

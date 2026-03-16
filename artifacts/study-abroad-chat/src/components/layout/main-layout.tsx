@@ -1,185 +1,130 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { MessageSquare, BookOpen, Menu, X, Plus, Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { 
-  useListOpenaiConversations, 
-  useCreateOpenaiConversation,
-  useDeleteOpenaiConversation 
-} from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { getListOpenaiConversationsQueryKey } from "@workspace/api-client-react";
+import { MessageSquare, BookOpen, Menu, X, LogOut, GraduationCap, Compass } from "lucide-react";
+import { useAuth } from "@workspace/replit-auth-web";
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [location, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-
-  const { data: conversations, isLoading: isLoadingConvos } = useListOpenaiConversations();
-  const createConvo = useCreateOpenaiConversation();
-  const deleteConvo = useDeleteOpenaiConversation();
-
-  const handleNewChat = async () => {
-    try {
-      const result = await createConvo.mutateAsync({ data: { title: "New Conversation" } });
-      queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
-      setLocation(`/?id=${result.id}`);
-      setIsMobileMenuOpen(false);
-    } catch (e) {
-      console.error("Failed to create conversation", e);
-    }
-  };
-
-  const handleDelete = async (e: React.MouseEvent, id: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      await deleteConvo.mutateAsync({ id });
-      queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
-      if (location.includes(`id=${id}`)) {
-        setLocation("/");
-      }
-    } catch (err) {
-      console.error("Failed to delete", err);
-    }
-  };
+  const [location] = useLocation();
+  const { user, logout } = useAuth();
 
   const NavLinks = () => (
-    <div className="space-y-1">
+    <div className="flex flex-col md:flex-row gap-2 md:gap-6">
       <Link 
         href="/" 
         onClick={() => setIsMobileMenuOpen(false)}
-        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
           location === "/" || location.startsWith("/?id=") 
-            ? "bg-primary text-primary-foreground font-medium shadow-md" 
-            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "text-primary font-bold bg-primary/5" 
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
         }`}
       >
-        <MessageSquare className="w-5 h-5" />
-        AI Counselor
+        <MessageSquare className="w-4 h-4" />
+        Chat
       </Link>
       <Link 
         href="/knowledge" 
         onClick={() => setIsMobileMenuOpen(false)}
-        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
           location.startsWith("/knowledge") 
-            ? "bg-primary text-primary-foreground font-medium shadow-md" 
-            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "text-primary font-bold bg-primary/5" 
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
         }`}
       >
-        <BookOpen className="w-5 h-5" />
+        <BookOpen className="w-4 h-4" />
         Knowledge Base
+      </Link>
+      <Link 
+        href="/fields" 
+        onClick={() => setIsMobileMenuOpen(false)}
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+          location.startsWith("/fields") 
+            ? "text-primary font-bold bg-primary/5" 
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        }`}
+      >
+        <Compass className="w-4 h-4" />
+        Field Insights
       </Link>
     </div>
   );
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      {/* Mobile Sidebar Overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside className={`
-        fixed md:static inset-y-0 left-0 z-50
-        w-72 bg-sidebar border-r border-sidebar-border
-        transform transition-transform duration-300 ease-in-out
-        flex flex-col h-full
-        ${isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
-      `}>
-        <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-              <BookOpen className="w-4 h-4 text-white" />
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
+      {/* Top Navbar */}
+      <header className="h-16 flex items-center justify-between px-4 md:px-8 border-b bg-card/80 backdrop-blur-md z-40 shrink-0 shadow-sm">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-3 cursor-pointer group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md group-hover:shadow-lg transition-all">
+              <GraduationCap className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-serif font-bold text-lg text-sidebar-foreground">GlobalEd AI</span>
-          </div>
+            <span className="font-serif font-bold text-xl hidden sm:block text-foreground group-hover:text-primary transition-colors">StudyAbroad AI</span>
+          </Link>
+          <nav className="hidden md:flex">
+            <NavLinks />
+          </nav>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          {user && (
+            <div className="hidden sm:flex items-center gap-3 pr-4 border-r">
+              <span className="text-sm font-medium text-foreground">{user.name}</span>
+              {user.profileImage ? (
+                <img src={user.profileImage} alt={user.name} className="w-8 h-8 rounded-full border border-border shadow-sm" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                  {user.name?.charAt(0)}
+                </div>
+              )}
+            </div>
+          )}
           <button 
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="md:hidden p-1 text-muted-foreground hover:text-foreground"
+            onClick={() => logout()}
+            className="hidden sm:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-3 py-1.5 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5" />
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 text-muted-foreground hover:text-foreground bg-muted/50 rounded-lg"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
+      </header>
 
-        <div className="p-4">
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-16 left-0 right-0 bottom-0 bg-background z-50 p-4 flex flex-col border-b shadow-xl animate-in slide-in-from-top-2">
           <NavLinks />
-        </div>
-
-        <div className="px-4 py-2 border-t border-sidebar-border flex-1 overflow-y-auto">
-          <div className="flex items-center justify-between mb-3 mt-2">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recent Chats</h3>
+          <div className="mt-auto border-t pt-4">
+             {user && (
+              <div className="flex items-center gap-3 mb-4 p-3 bg-muted rounded-xl">
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt={user.name} className="w-10 h-10 rounded-full border border-border shadow-sm" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                    {user.name?.charAt(0)}
+                  </div>
+                )}
+                <span className="font-bold text-foreground">{user.name}</span>
+              </div>
+            )}
             <button 
-              onClick={handleNewChat}
-              disabled={createConvo.isPending}
-              className="p-1 text-primary hover:bg-primary/10 rounded-md transition-colors"
-              title="New Chat"
+              onClick={() => logout()}
+              className="flex w-full items-center justify-center gap-2 p-3 text-destructive font-bold bg-destructive/10 hover:bg-destructive/20 rounded-xl transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              <LogOut className="w-5 h-5" />
+              Sign out
             </button>
           </div>
-          
-          <div className="space-y-1">
-            {isLoadingConvos ? (
-              <div className="animate-pulse space-y-2">
-                {[1,2,3].map(i => <div key={i} className="h-10 bg-sidebar-accent rounded-lg" />)}
-              </div>
-            ) : conversations?.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No recent chats</p>
-            ) : (
-              conversations?.map((conv) => (
-                <div key={conv.id} className="group relative">
-                  <Link 
-                    href={`/?id=${conv.id}`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`block w-full text-left px-3 py-2.5 rounded-lg text-sm truncate transition-colors ${
-                      location.includes(`id=${conv.id}`)
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-                    }`}
-                  >
-                    {conv.title || "New Conversation"}
-                    <span className="block text-xs text-muted-foreground mt-0.5 font-normal">
-                      {format(new Date(conv.createdAt), "MMM d, yyyy")}
-                    </span>
-                  </Link>
-                  <button 
-                    onClick={(e) => handleDelete(e, conv.id)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md opacity-0 group-hover:opacity-100 transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
         </div>
-      </aside>
+      )}
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 bg-background relative">
-        <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <BookOpen className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-serif font-bold text-foreground">GlobalEd AI</span>
-          </div>
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 -mr-2 text-muted-foreground hover:text-foreground"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-        </header>
-
-        <div className="flex-1 overflow-y-auto relative">
-          {children}
-        </div>
+      <main className="flex-1 overflow-hidden relative">
+        {children}
       </main>
     </div>
   );
