@@ -116,7 +116,7 @@ export function ChatPage() {
                 />
               </div>
               <h1 className="text-4xl font-serif font-bold text-foreground mb-4">
-                Your Expert Study Abroad Counselor
+                Your Expert Global Education Counselor
               </h1>
               <p className="text-lg text-muted-foreground mb-12 max-w-xl">
                 I can help you explore universities, understand visa requirements, and navigate admission deadlines securely from our verified knowledge base.

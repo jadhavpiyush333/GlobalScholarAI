@@ -16,7 +16,7 @@ export function LoginPage() {
             <GraduationCap className="w-12 h-12 text-primary" />
           </div>
           <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tight text-foreground leading-tight">
-            StudyAbroad AI
+            GlobeScholar AI
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-lg mx-auto md:mx-0">
             Your 24/7 AI-powered study abroad counselor
