@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "For smooth message entrance animations and page transitions"
+  "react-markdown": "To render structured markdown responses from the AI"
+  "remark-gfm": "To support tables and advanced markdown features in AI responses"
+  "date-fns": "For formatting conversation timestamps beautifully"
+
+images:
+  - path: "artifacts/study-abroad-chat/public/images/hero-academy.png"
+    description: "Elegant, minimalist 3D illustration of classic university columns and a graduation cap in soft blue and gold tones, professional and modern"
+    aspect_ratio: "16:9"
+  - path: "artifacts/study-abroad-chat/public/images/avatar-bot.png"
+    description: "Clean, friendly minimalist robot face icon inside a circle, professional academic blue colors"
+    aspect_ratio: "1:1"
+
+notes:
+  - AI chat streaming relies on SSE text/event-stream via POST. Using fetch + ReadableStream to parse chunks.
+  - Using pre-generated Orval hooks from @workspace/api-client-react for standard CRUD operations.

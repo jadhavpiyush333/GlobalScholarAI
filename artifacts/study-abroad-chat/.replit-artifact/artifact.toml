@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Study Abroad AI Counselor"
+version = "1.0.0"
+id = "artifacts/study-abroad-chat"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 25473
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/study-abroad-chat run dev"
+
+[services.env]
+PORT = "25473"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/study-abroad-chat", "run", "build"]
+publicDir = "artifacts/study-abroad-chat/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

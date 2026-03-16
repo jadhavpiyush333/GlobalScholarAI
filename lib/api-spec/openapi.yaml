@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Study Abroad AI Counselor API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: openai
+    description: OpenAI AI chat operations
+  - name: knowledge
+    description: Knowledge base for universities, programs, and visa requirements
 paths:
   /healthz:
     get:
@@ -24,6 +27,228 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /openai/conversations:
+    get:
+      operationId: listOpenaiConversations
+      tags: [openai]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiConversation"
+    post:
+      operationId: createOpenaiConversation
+      tags: [openai]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOpenaiConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversation"
+
+  /openai/conversations/{id}:
+    get:
+      operationId: getOpenaiConversation
+      tags: [openai]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+    delete:
+      operationId: deleteOpenaiConversation
+      tags: [openai]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+
+  /openai/conversations/{id}/messages:
+    get:
+      operationId: listOpenaiMessages
+      tags: [openai]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiMessage"
+    post:
+      operationId: sendOpenaiMessage
+      tags: [openai]
+      summary: Send a text message and receive a streaming text response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOpenaiMessageBody"
+      responses:
+        "200":
+          description: SSE stream of assistant text chunks
+          content:
+            text/event-stream: {}
+
+  /knowledge/universities:
+    get:
+      operationId: listUniversities
+      tags: [knowledge]
+      summary: List all universities in the knowledge base
+      parameters:
+        - name: country
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of universities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/University"
+
+  /knowledge/universities/{id}:
+    get:
+      operationId: getUniversity
+      tags: [knowledge]
+      summary: Get a university with its programs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: University with programs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UniversityWithPrograms"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+
+  /knowledge/programs:
+    get:
+      operationId: listPrograms
+      tags: [knowledge]
+      summary: List all programs in the knowledge base
+      parameters:
+        - name: universityId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: degree
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Program"
+
+  /knowledge/visa-requirements:
+    get:
+      operationId: listVisaRequirements
+      tags: [knowledge]
+      summary: List visa requirements by country
+      parameters:
+        - name: country
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: visaType
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of visa requirements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VisaRequirement"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +259,194 @@ components:
       required:
         - status
 
+    OpenaiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+
+    OpenaiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+
+    OpenaiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpenaiMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+
+    CreateOpenaiConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+
+    SendOpenaiMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    OpenaiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    University:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        website:
+          type: string
+        description:
+          type: string
+        ranking:
+          type: integer
+      required:
+        - id
+        - name
+        - country
+        - city
+
+    Program:
+      type: object
+      properties:
+        id:
+          type: integer
+        universityId:
+          type: integer
+        universityName:
+          type: string
+        name:
+          type: string
+        degree:
+          type: string
+        duration:
+          type: string
+        language:
+          type: string
+        tuitionPerYear:
+          type: string
+        applicationDeadline:
+          type: string
+        requirements:
+          type: string
+        ieltsMin:
+          type: number
+        toeflMin:
+          type: number
+      required:
+        - id
+        - universityId
+        - universityName
+        - name
+        - degree
+        - duration
+        - language
+
+    UniversityWithPrograms:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        website:
+          type: string
+        description:
+          type: string
+        ranking:
+          type: integer
+        programs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Program"
+      required:
+        - id
+        - name
+        - country
+        - city
+        - programs
+
+    VisaRequirement:
+      type: object
+      properties:
+        id:
+          type: integer
+        country:
+          type: string
+        visaType:
+          type: string
+        requirements:
+          type: string
+        processingTime:
+          type: string
+        fees:
+          type: string
+        proofOfFunds:
+          type: string
+        notes:
+          type: string
+      required:
+        - id
+        - country
+        - visaType
+        - requirements
