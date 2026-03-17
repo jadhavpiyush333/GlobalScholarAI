@@ -631,6 +631,10 @@ components:
           type: string
         scholarshipsAvailable:
           type: boolean
+        financialServices:
+          type: string
+        imageUrl:
+          type: string
       required:
         - id
         - name
@@ -696,6 +700,8 @@ components:
           type: string
         scholarshipsAvailable:
           type: boolean
+        imageUrl:
+          type: string
         contact:
           $ref: "#/components/schemas/UniversityContact"
         programs:

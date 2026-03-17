@@ -189,6 +189,8 @@ export const ListUniversitiesResponseItem = zod.object({
   ranking: zod.number().optional(),
   fields: zod.string().optional(),
   scholarshipsAvailable: zod.boolean().optional(),
+  financialServices: zod.string().optional(),
+  imageUrl: zod.string().optional(),
 });
 export const ListUniversitiesResponse = zod.array(ListUniversitiesResponseItem);
 
@@ -209,6 +211,7 @@ export const GetUniversityResponse = zod.object({
   ranking: zod.number().optional(),
   fields: zod.string().optional(),
   scholarshipsAvailable: zod.boolean().optional(),
+  imageUrl: zod.string().optional(),
   contact: zod
     .object({
       admissionsEmail: zod.string().optional(),

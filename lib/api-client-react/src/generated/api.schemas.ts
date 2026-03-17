@@ -106,6 +106,8 @@ export interface University {
   ranking?: number;
   fields?: string;
   scholarshipsAvailable?: boolean;
+  financialServices?: string;
+  imageUrl?: string;
 }
 
 export interface Program {
@@ -134,6 +136,7 @@ export interface UniversityWithDetails {
   ranking?: number;
   fields?: string;
   scholarshipsAvailable?: boolean;
+  imageUrl?: string;
   contact?: UniversityContact;
   programs: Program[];
   financialServices?: string;

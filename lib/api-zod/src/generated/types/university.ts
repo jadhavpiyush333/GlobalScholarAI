@@ -16,4 +16,6 @@ export interface University {
   ranking?: number;
   fields?: string;
   scholarshipsAvailable?: boolean;
+  financialServices?: string;
+  imageUrl?: string;
 }

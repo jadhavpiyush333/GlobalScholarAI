@@ -18,6 +18,7 @@ export interface UniversityWithDetails {
   ranking?: number;
   fields?: string;
   scholarshipsAvailable?: boolean;
+  imageUrl?: string;
   contact?: UniversityContact;
   programs: Program[];
   financialServices?: string;

@@ -128,52 +128,63 @@ export function KnowledgeBasePage() {
               loadingUni ? <LoadingSpinner /> : 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {universities?.length === 0 && <EmptyState entity="universities" />}
-                {universities?.map((uni) => (
-                  <Link href={`/knowledge/university/${uni.id}`} key={uni.id}>
-                    <div className="group h-full bg-card rounded-3xl border border-border shadow-sm hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden">
-                      <div className="p-6 pb-0 flex items-start justify-between mb-4">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 text-primary flex items-center justify-center shadow-inner border border-primary/10">
-                          <Building className="w-8 h-8" />
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          {uni.ranking && (
-                            <span className="px-3 py-1 bg-accent/10 text-accent-foreground border border-accent/20 text-xs font-bold rounded-full flex items-center gap-1 shadow-sm">
-                              <Award className="w-3.5 h-3.5" /> Rank #{uni.ranking}
-                            </span>
+                {universities?.map((uni) => {
+                  const imgSrc = uni.imageUrl 
+                    ? (uni.imageUrl.startsWith('/') ? import.meta.env.BASE_URL.replace(/\/$/, '') + uni.imageUrl : uni.imageUrl)
+                    : null;
+
+                  return (
+                    <Link href={`/knowledge/university/${uni.id}`} key={uni.id}>
+                      <div className="group h-full bg-card rounded-3xl border border-border shadow-sm hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden">
+                        
+                        <div className="p-6 pb-0 flex flex-col sm:flex-row items-start gap-4 mb-4">
+                          {imgSrc ? (
+                            <img src={imgSrc} alt={uni.name} className="w-20 h-20 rounded-2xl object-cover shadow-sm border border-border shrink-0" />
+                          ) : (
+                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 text-primary flex items-center justify-center shadow-inner border border-primary/10 shrink-0">
+                              <span className="text-3xl font-serif font-bold">{uni.name.charAt(0)}</span>
+                            </div>
                           )}
-                          <span className="text-2xl" title={uni.country}>
-                            {getFlag(uni.country)}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="px-6 flex-1 flex flex-col">
-                        <h3 className="text-2xl font-serif font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">{uni.name}</h3>
-                        <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium mb-4">
-                          <MapPin className="w-4 h-4" />
-                          {uni.city}, {uni.country}
+                          <div className="flex flex-col items-start sm:items-end sm:ml-auto gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                            {uni.ranking && (
+                              <span className="px-3 py-1 bg-accent/10 text-accent-foreground border border-accent/20 text-xs font-bold rounded-full flex items-center gap-1 shadow-sm">
+                                <Award className="w-3.5 h-3.5" /> Rank #{uni.ranking}
+                              </span>
+                            )}
+                            <span className="text-2xl" title={uni.country}>
+                              {getFlag(uni.country)}
+                            </span>
+                          </div>
                         </div>
                         
-                        <p className="text-sm text-muted-foreground line-clamp-3 mb-6 flex-1">
-                          {uni.description || "Leading institution offering world-class education and research opportunities."}
-                        </p>
+                        <div className="px-6 flex-1 flex flex-col">
+                          <h3 className="text-2xl font-serif font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">{uni.name}</h3>
+                          <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium mb-4">
+                            <MapPin className="w-4 h-4" />
+                            {uni.city}, {uni.country}
+                          </div>
+                          
+                          <p className="text-sm text-muted-foreground line-clamp-3 mb-6 flex-1">
+                            {uni.description || "Leading institution offering world-class education and research opportunities."}
+                          </p>
+                          
+                          <div className="flex flex-wrap gap-2 mb-6">
+                            {uni.scholarshipsAvailable && (
+                              <span className="px-2 py-1 bg-green-500/10 text-green-700 text-xs font-bold rounded-md flex items-center gap-1">
+                                <DollarSign className="w-3 h-3" /> Scholarships
+                              </span>
+                            )}
+                          </div>
+                        </div>
                         
-                        <div className="flex flex-wrap gap-2 mb-6">
-                          {uni.scholarshipsAvailable && (
-                            <span className="px-2 py-1 bg-green-500/10 text-green-700 text-xs font-bold rounded-md flex items-center gap-1">
-                              <DollarSign className="w-3 h-3" /> Scholarships
-                            </span>
-                          )}
+                        <div className="px-6 py-4 bg-muted/30 border-t border-border flex items-center justify-between text-primary text-sm font-bold group-hover:bg-primary/5 transition-colors">
+                          View Details
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
-                      
-                      <div className="px-6 py-4 bg-muted/30 border-t border-border flex items-center justify-between text-primary text-sm font-bold group-hover:bg-primary/5 transition-colors">
-                        View Details
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             )}
 

@@ -2,7 +2,8 @@ import { useRoute, Link } from "wouter";
 import { 
   ArrowLeft, MapPin, Globe, Trophy, CheckCircle2, 
   AlertCircle, Mail, Phone, ExternalLink, Calendar,
-  DollarSign, GraduationCap, ShieldCheck, Clock
+  DollarSign, GraduationCap, ShieldCheck, Clock,
+  ArrowRight
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { useGetUniversity, useListVisaRequirements } from "@workspace/api-client-react";
@@ -48,56 +49,62 @@ export function UniversityDetailPage() {
     );
   }
 
+  const imgSrc = uni.imageUrl 
+    ? (uni.imageUrl.startsWith('/') ? import.meta.env.BASE_URL.replace(/\/$/, '') + uni.imageUrl : uni.imageUrl)
+    : import.meta.env.BASE_URL + 'images/cover_hero.jpg';
+
   return (
     <MainLayout>
       <div className="w-full h-full overflow-y-auto bg-background/50 pb-20">
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
+        
+        {/* HERO BANNER SECTION */}
+        <div className="relative w-full h-[200px] md:h-[280px] bg-gray-900 overflow-hidden shrink-0">
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${imgSrc})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
+          
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 max-w-7xl mx-auto flex flex-col items-start gap-3">
+            {uni.ranking && (
+              <span className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-sm font-bold rounded-full flex items-center gap-1.5 shadow-sm backdrop-blur-md">
+                <Trophy className="w-4 h-4" /> #{uni.ranking} World Ranking
+              </span>
+            )}
+            <h1 className="text-3xl md:text-5xl font-serif font-bold text-white drop-shadow-md">{uni.name}</h1>
+            <div className="flex flex-wrap items-center gap-4 text-white/90 text-sm md:text-base font-medium">
+              <span className="flex items-center gap-1.5 drop-shadow">
+                <MapPin className="w-4 h-4 text-white/70" />
+                {uni.city}, {uni.country}
+              </span>
+              {uni.scholarshipsAvailable && (
+                <span className="flex items-center gap-1.5 text-green-300 drop-shadow font-semibold">
+                  <DollarSign className="w-4 h-4" /> Scholarships Available
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto p-4 md:p-8">
           <Link href="/knowledge" className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary mb-8 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Knowledge Base
           </Link>
 
-          {/* Header Profile */}
-          <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-xl mb-12">
-            <div className="h-56 bg-gradient-to-r from-primary to-accent relative">
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay" />
-            </div>
-            <div className="px-8 md:px-12 pb-12 pt-0 relative">
-              <div className="w-32 h-32 bg-card rounded-3xl border-8 border-card shadow-xl -mt-16 mb-6 flex items-center justify-center overflow-hidden z-10 relative bg-background">
-                 <span className="text-5xl font-serif text-primary font-bold">{uni.name.charAt(0)}</span>
-              </div>
-              
-              <div className="flex flex-col lg:flex-row gap-8 justify-between items-start">
-                <div className="flex-1">
-                  <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">{uni.name}</h1>
-                  <div className="flex flex-wrap items-center gap-3 text-sm font-medium mb-6">
-                    <span className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-lg text-foreground">
-                      <MapPin className="w-4 h-4 text-primary" />
-                      {uni.city}, {uni.country}
-                    </span>
-                    {uni.website && (
-                      <a href={uni.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-lg text-foreground hover:text-primary transition-colors">
-                        <Globe className="w-4 h-4 text-primary" />
-                        Official Website <ExternalLink className="w-3 h-3 ml-0.5" />
-                      </a>
-                    )}
-                    {uni.ranking && (
-                      <span className="flex items-center gap-1.5 bg-accent/20 text-accent-foreground px-3 py-1.5 rounded-lg font-bold border border-accent/20">
-                        <Trophy className="w-4 h-4 text-accent" />
-                        Rank #{uni.ranking}
-                      </span>
-                    )}
-                    {uni.scholarshipsAvailable && (
-                      <span className="flex items-center gap-1.5 bg-green-500/10 text-green-700 px-3 py-1.5 rounded-lg font-bold border border-green-500/20">
-                        <DollarSign className="w-4 h-4" />
-                        Scholarships Available
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-foreground text-lg leading-relaxed max-w-4xl">
-                    {uni.description || `${uni.name} is a leading institution located in ${uni.city}, ${uni.country}. Known for its excellent academic programs and research facilities.`}
-                  </p>
-                </div>
+          {/* Intro Description */}
+          <div className="bg-card rounded-3xl border border-border p-8 shadow-sm mb-12">
+            <div className="flex flex-col lg:flex-row gap-8 justify-between items-start">
+              <div className="flex-1">
+                <p className="text-foreground text-lg leading-relaxed max-w-4xl">
+                  {uni.description || `${uni.name} is a leading institution located in ${uni.city}, ${uni.country}. Known for its excellent academic programs and research facilities.`}
+                </p>
+                {uni.website && (
+                  <a href={uni.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 bg-muted hover:bg-primary/10 hover:text-primary rounded-xl text-sm font-bold transition-colors">
+                    <Globe className="w-4 h-4" />
+                    Visit Official Website <ExternalLink className="w-3 h-3 ml-1" />
+                  </a>
+                )}
               </div>
             </div>
           </div>

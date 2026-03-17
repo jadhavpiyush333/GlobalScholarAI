@@ -13,6 +13,7 @@ export const universities = pgTable("universities", {
   fields: text("fields"),
   scholarshipsAvailable: boolean("scholarships_available").default(false),
   financialServices: text("financial_services"),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
