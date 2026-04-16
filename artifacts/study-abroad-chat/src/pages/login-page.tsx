@@ -1,9 +1,7 @@
-import { Globe, GraduationCap, ShieldCheck, Briefcase } from "lucide-react";
-import { useAuth } from "@workspace/replit-auth-web";
+import { Link } from "wouter";
+import { Globe, GraduationCap, ShieldCheck, Briefcase, MessageSquare } from "lucide-react";
 
 export function LoginPage() {
-  const { login } = useAuth();
-  
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row w-full overflow-hidden">
       {/* LEFT PANEL */}
@@ -63,25 +61,23 @@ export function LoginPage() {
       <div className="w-full md:w-[40%] flex-1 bg-white flex flex-col items-center justify-center p-8 md:p-12 relative">
         <div className="w-full max-w-md bg-white border border-gray-100 rounded-3xl p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center text-center relative z-10">
           <GraduationCap className="w-12 h-12 text-indigo-600 mb-6" />
-          <h2 className="text-3xl font-serif font-bold mb-3 text-gray-900">Welcome Back</h2>
-          <p className="text-gray-500 mb-10 text-base">Sign in to explore your global education journey</p>
+          <h2 className="text-3xl font-serif font-bold mb-3 text-gray-900">GlobeScholar AI Demo</h2>
+          <p className="text-gray-500 mb-10 text-base">Explore global education opportunities instantly - no login required</p>
           
-          <button 
-            onClick={() => login()}
-            className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
-          >
-            Sign In with Replit
-          </button>
+          <Link href="/" className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+            <MessageSquare className="w-5 h-5" />
+            Start AI Chat Now
+          </Link>
           
           <p className="mt-8 text-sm text-gray-400 font-medium">
-            Secure login • No data shared
+            Public Demo • Powered by GPT
           </p>
         </div>
         
         {/* Badge */}
         <div className="absolute bottom-8 right-8">
           <div className="px-4 py-2 bg-gray-50 rounded-full border border-gray-100 text-xs font-bold text-gray-400 flex items-center shadow-sm">
-            Powered by GPT AI
+            Live Demo
           </div>
         </div>
       </div>

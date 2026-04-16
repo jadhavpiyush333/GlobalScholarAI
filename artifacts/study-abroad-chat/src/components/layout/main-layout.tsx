@@ -1,12 +1,10 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { MessageSquare, BookOpen, Menu, X, LogOut, GraduationCap, Compass } from "lucide-react";
-import { useAuth } from "@workspace/replit-auth-web";
+import { MessageSquare, BookOpen, Menu, X, GraduationCap, Compass } from "lucide-react";
 
 export function MainLayout({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [location] = useLocation();
-  const { user, logout } = useAuth();
 
   const NavLinks = () => (
     <div className="flex flex-col md:flex-row gap-2 md:gap-6">
@@ -65,60 +63,18 @@ export function MainLayout({ children }: { children: ReactNode }) {
           </nav>
         </div>
         
-        <div className="flex items-center gap-4">
-          {user && (
-            <div className="hidden sm:flex items-center gap-3 pr-4 border-r">
-              <span className="text-sm font-medium text-foreground">{user.name}</span>
-              {user.profileImage ? (
-                <img src={user.profileImage} alt={user.name} className="w-8 h-8 rounded-full border border-border shadow-sm" />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                  {user.name?.charAt(0)}
-                </div>
-              )}
-            </div>
-          )}
-          <button 
-            onClick={() => logout()}
-            className="hidden sm:flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-3 py-1.5 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign out
-          </button>
-          <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground bg-muted/50 rounded-lg"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden p-2 text-muted-foreground hover:text-foreground bg-muted/50 rounded-lg"
+        >
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </header>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bottom-0 bg-background z-50 p-4 flex flex-col border-b shadow-xl animate-in slide-in-from-top-2">
           <NavLinks />
-          <div className="mt-auto border-t pt-4">
-             {user && (
-              <div className="flex items-center gap-3 mb-4 p-3 bg-muted rounded-xl">
-                {user.profileImage ? (
-                  <img src={user.profileImage} alt={user.name} className="w-10 h-10 rounded-full border border-border shadow-sm" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                    {user.name?.charAt(0)}
-                  </div>
-                )}
-                <span className="font-bold text-foreground">{user.name}</span>
-              </div>
-            )}
-            <button 
-              onClick={() => logout()}
-              className="flex w-full items-center justify-center gap-2 p-3 text-destructive font-bold bg-destructive/10 hover:bg-destructive/20 rounded-xl transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              Sign out
-            </button>
-          </div>
         </div>
       )}
 
